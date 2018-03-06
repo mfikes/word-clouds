@@ -9,9 +9,7 @@
                     (into #{} (line-seq rdr))))
 
 (defn top-words [n text]
-  (->> text
-    string/split-lines
-    (mapcat #(string/split % #"[\s.,]+"))
+  (->> (string/split text #"[\s.,]+")
     (map string/lower-case)
     (remove common-words)
     frequencies
