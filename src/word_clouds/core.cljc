@@ -1,27 +1,23 @@
 (ns word-clouds.core
   (:require
    [clojure.string :as string]
-   #?(:cljs [planck.core :refer [line-seq]])
+   #?(:cljs [planck.core :refer [line-seq with-open]])
    #?(:clj  [clojure.java.io :as io]
       :cljs [planck.io :as io])))
 
-(def common-words (->> "common_words.txt"
-                    io/resource
-                    io/reader
-                    line-seq
-                    (into #{})))
+(def common-words (with-open [rdr (io/reader (io/resource "common_words.txt"))]
+                    (into #{} (line-seq rdr))))
+
+(defn top-words [rdr]
+  (->> rdr
+    line-seq
+    (mapcat #(string/split % #"[\s.,]+"))
+    (map string/lower-case)
+    (remove common-words)
+    frequencies
+    (sort-by val >)
+    (take 25)))
 
 (defn -main [input-file]
-  (let [lines     (-> input-file
-                    io/file
-                    io/reader
-                    line-seq)
-        words     (->> lines
-                    (mapcat #(string/split % #"[\s.,]+"))
-                    (map string/lower-case))
-        top-words (->> words
-                    (remove common-words)
-                    frequencies
-                    (sort-by val >)
-                    (take 25))]
-    (run! #(apply println (reverse %)) top-words)))
+  (with-open [rdr (io/reader input-file)]
+    (run! #(apply println (reverse %)) (top-words rdr))))
