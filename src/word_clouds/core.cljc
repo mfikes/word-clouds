@@ -8,7 +8,7 @@
 (def common-words (with-open [rdr (io/reader (io/resource "common_words.txt"))]
                     (into #{} (line-seq rdr))))
 
-(defn top-words [rdr]
+(defn top-words [n rdr]
   (->> rdr
     line-seq
     (mapcat #(string/split % #"[\s.,]+"))
@@ -16,8 +16,10 @@
     (remove common-words)
     frequencies
     (sort-by val >)
-    (take 25)))
+    (take n)))
 
 (defn -main [input-file]
   (with-open [rdr (io/reader input-file)]
-    (run! #(apply println (reverse %)) (top-words rdr))))
+    (->> rdr
+      (top-words 25)
+      (run! #(apply println (reverse %))))))
