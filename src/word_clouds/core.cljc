@@ -19,4 +19,5 @@
 (defn -main [input-file]
   (->> (slurp input-file)
     (top-words 25)
-    (run! #(apply println (reverse %)))))
+    (map reverse)
+    (run! #(apply println %))))
